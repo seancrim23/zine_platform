@@ -19,6 +19,7 @@ func (z *ZinePlatformServer) loadRoutes() {
 	})
 
 	router.Route("/zine", z.loadZineRoutes)
+	router.Route("/file", z.loadFileRoutes)
 
 	z.router = router
 }
@@ -34,4 +35,25 @@ func (z *ZinePlatformServer) loadZineRoutes(router chi.Router) {
 	router.Get("/{id}", zineHandler.GetZine)
 	router.Put("/{id}", zineHandler.UpdateZine)
 	router.Delete("/{id}", zineHandler.DeleteZine)
+}
+
+func (z *ZinePlatformServer) loadFileRoutes(router chi.Router) {
+	fileHandler := &handler.File{
+		DBService: &services.FirestoreFileDatabaseService{
+			Database: z.firestoreDb,
+		},
+		FileStorageService: &services.CloudStorageFileStorageService{
+			//TODO some cloud storage client that has been spun up should be here
+		},
+	}
+
+	router.Post("/", fileHandler.UploadFile)
+	router.Get("/{id}", fileHandler.GetFile)
+	router.Put("/{id}", fileHandler.UpdateFile)
+	router.Delete("/{id}", fileHandler.DeleteFile)
+
+	router.Post("/metadata", fileHandler.CreateFileMetadata)
+	router.Get("/metadata/{id}", fileHandler.GetFileMetadata)
+	router.Put("/metadata/{id}", fileHandler.UpdateFileMetadata)
+	router.Delete("/metadata/{id}", fileHandler.DeleteFileMetadata)
 }
